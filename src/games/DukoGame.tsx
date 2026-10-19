@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { levels } from '../levels'
+import { levelSignature, readProgress, saveProgress } from '../services/progress'
 
 type Mark = 'empty' | 'flag' | 'excluded'
 const nextMark: Record<Mark, Mark> = { empty: 'flag', flag: 'excluded', excluded: 'empty' }
@@ -7,6 +8,9 @@ const names = ['蜜桃', '奶黄', '薄荷', '薰衣草', '天空', '杏橙', '�
 const emptyBoard = (size: number): Mark[] => Array<Mark>(size * size).fill('empty')
 
 function DukoGame() {
+  const [completedLevels, setCompletedLevels] = useState(() => readProgress(levels))
+  const [saveFailed, setSaveFailed] = useState(false)
+  const completedCount = levels.filter(item => completedLevels[item.id] === levelSignature(item)).length
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [levelIndex, setLevelIndex] = useState(0)
   const level = levels[levelIndex]
@@ -33,6 +37,11 @@ function DukoGame() {
           ? '旗子还没放齐，需要放置 ' + size + ' 面旗子，当前有 ' + flags.length + ' 面。'
           : '旗子数量过多，请调整后重新检查。'
     setCheckResult({ conflicts: invalid, won: complete, message })
+    if (complete) {
+      const updated = { ...readProgress(levels), ...completedLevels, [level.id]: levelSignature(level) }
+      setCompletedLevels(updated)
+      setSaveFailed(!saveProgress(updated))
+    }
   }
 
   function changeCell(index: number) {
@@ -78,12 +87,16 @@ function DukoGame() {
       <div className={'game-layout' + (sidebarOpen ? ' sidebar-open' : '')}>
         <aside id="level-sidebar" className="level-sidebar" hidden={!sidebarOpen} aria-label="关卡侧边栏">
           <div className="sidebar-heading"><h2>选择关卡</h2><span>{levels.length} 个</span></div>
+          <p className="level-progress" role="status">已完成 <strong>{completedCount} / {levels.length}</strong></p>
+          {saveFailed && <p className="storage-warning" role="status">浏览器未能保存记录，刷新后本次进度可能丢失。</p>}
           <nav className="level-selector" aria-label="选择关卡">
             {levels.map((item, index) => (
               <button key={item.id} type="button" aria-current={index === levelIndex ? 'step' : undefined}
-                aria-label={'第 ' + (index + 1) + ' 关'}
+                className={completedLevels[item.id] ? 'level-completed' : undefined}
+                aria-label={'第 ' + (index + 1) + ' 关' + (completedLevels[item.id] ? '，已完成' : '')}
                 onClick={() => { if (index !== levelIndex) selectLevel(index) }}>
                 {index + 1}
+                {completedLevels[item.id] && <span className="completed-check" aria-hidden="true">✓</span>}
               </button>
             ))}
           </nav>
@@ -130,7 +143,7 @@ function DukoGame() {
           <h2>怎么玩</h2>
           <p>每一行、每一列、每一种颜色区域，都恰好放置一面旗子。</p>
           <p>每点一次切换标记：空白 → 旗子 → 排除（×）→ 空白。格子角落的数字代表颜色区域。</p>
-          <p>插旗完成后，点击“检查答案”查看结果。</p>
+          <p>插旗完成后，点击“检查答案”查看结果。通关记录自动保存在当前浏览器中。</p>
         </aside>
       </section>
       </div>

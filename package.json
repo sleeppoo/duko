@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "validate:levels": "node scripts/validate-levels.mjs",
     "generate:levels": "node scripts/generate-levels.mjs",
-    "test:generator": "node --test tests/generator.test.mjs"
+    "test:generator": "node --test tests/generator.test.mjs",
+    "test:progress": "node --test tests/progress.test.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",
