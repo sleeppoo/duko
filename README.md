@@ -1,6 +1,6 @@
 # 小小游戏大厅 / Duko
 
-React + TypeScript + Vite 网页小游戏。首页提供游戏入口，Duko 支持关卡选择、左右键标记、撤销和手动检查答案。
+React + TypeScript + Vite 网页小游戏。首页提供游戏入口，Duko 支持关卡选择、点击循环标记、撤销和手动检查答案。
 
 ## 开发与检查
 
